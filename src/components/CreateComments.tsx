@@ -98,28 +98,33 @@ function CreateComments() {
 
   return (
     <form ref={formRef} onSubmit={handleOnSubmit}>
-      <input
-        name="nickname"
-        type="text"
-        value={nickname}
-        onChange={handleChangeForm}
-        maxLength={20}
-      />
-      <input
-        name="password"
-        type="password"
-        autoComplete="new-password"
-        value={password}
-        onChange={handleChangeForm}
-      />
-      <textarea
-        name="content"
-        value={content}
-        onChange={handleChangeForm}
-      ></textarea>
-      <button ref={submitBtnRef} name="submit_btn">
-        Submit
-      </button>
+      <div>
+        {" "}
+        <input
+          name="nickname"
+          type="text"
+          value={nickname}
+          onChange={handleChangeForm}
+          maxLength={20}
+        />
+        <input
+          name="password"
+          type="password"
+          autoComplete="new-password"
+          value={password}
+          onChange={handleChangeForm}
+        />
+      </div>
+      <div>
+        <textarea
+          name="content"
+          value={content}
+          onChange={handleChangeForm}
+        ></textarea>
+        <button ref={submitBtnRef} name="submit_btn">
+          Submit
+        </button>
+      </div>
     </form>
   );
 }
