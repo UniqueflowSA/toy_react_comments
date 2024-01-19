@@ -1,103 +1,54 @@
-import { useEffect, useReducer, useRef } from "react";
+import { useEffect, useRef, useState, useContext } from "react";
+import { CommentsFunctionContext } from "./CommentsComponents";
+
 //댓글 작성폼, 데이터 스프레드시트로 보내기
-
-function reducer(state: any, action: any) {
-  switch (action.type) {
-    case "ONCHANGE_FORM":
-      return {
-        ...state,
-        [action.name]: action.value,
-      };
-    case "ONSUBMIT_FORM":
-      const getCommentsId = Math.floor(Math.random() * 10000000000000);
-      const getCommentsDate = new Date().toLocaleString();
-
-      return {
-        ...state,
-        commentsId: getCommentsId,
-        date: getCommentsDate,
-      };
-    case "ONRESET_FORM":
-      return {
-        commentsId: 0,
-        nickname: "",
-        password: "",
-        content: "",
-        date: "",
-      };
-  }
-}
-
 function CreateComments() {
   const submitBtnRef = useRef<any>(null);
-  const formRef = useRef<any>(null);
-
-  const [formState, dispatch] = useReducer(reducer, {
+  const [createForm, setCreateForm] = useState({
     commentsId: 0,
     nickname: "",
     password: "",
     content: "",
     date: "",
   });
+  /**Context호출 */
+  const { onCreate } = useContext(CommentsFunctionContext);
 
-  let { commentsId, nickname, password, content } = formState;
-
+  //createForm 구조분해
+  let { commentsId, nickname, password, content } = createForm;
+  //useState onChange함수
   const handleChangeForm = (
     e:
       | React.ChangeEvent<HTMLInputElement>
       | React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    dispatch({
-      type: "ONCHANGE_FORM",
-      name: e.target.name,
-      value: e.target.value,
-    });
+    const { name, value } = e.target;
+    setCreateForm({ ...createForm, [name]: value });
   };
-
+  /**submit으로 id부여 및 데이터 전송*/
   const handleOnSubmit = (e: any) => {
     e.preventDefault();
-    console.log(formState);
-    if (
-      nickname === "" &&
-      formState.password === "" &&
-      formState.content === ""
-    ) {
+    if (nickname && password && content) {
+      submitBtnRef.current.disabled = true;
+      setCreateForm({
+        ...createForm,
+        commentsId: Math.floor(Math.random() * 10000000000000),
+        date: new Date().toLocaleString(),
+      });
+    } else {
       return alert("작성되지않은 빈칸이 존재합니다.");
     }
-
-    dispatch({ type: "ONSUBMIT_FORM" });
-    console.log(formState);
-    submitBtnRef.current.disabled = true;
   };
+  /** commentsId부여시(handleOnSubmit)에 context(onCreate)로 fetch post실행 */
   useEffect(() => {
-    // dispatch commentsId부여 후 fetchDB 통신
-    console.log(formState);
-    if (commentsId !== 0) {
-      fetch(
-        "https://script.google.com/macros/s/AKfycbwrycsxPh3pRMnFBf_kZ62Kx_jBwMbZurkSsdpGkaBXS5TONVQDWBnUxDqm6JL4EtqA/exec",
-        {
-          method: "POST",
-          body: JSON.stringify(formState),
-        }
-      )
-        .then((res) => {
-          formRef.current.reset();
-          alert("입력 완료.");
-          console.log(res);
-          dispatch({ type: "ONRESET_FORM" });
-        })
-        .catch((error) => {
-          console.log(error);
-          alert("에러");
-        })
-        .finally(() => {
-          submitBtnRef.current.disabled = false;
-        });
+    console.log(createForm);
+    if (commentsId !== 0 && nickname && password && content) {
+      onCreate(createForm, setCreateForm, submitBtnRef);
     }
   }, [commentsId]);
 
   return (
-    <form ref={formRef} onSubmit={handleOnSubmit}>
+    <form onSubmit={handleOnSubmit}>
       <div>
         {" "}
         <input
